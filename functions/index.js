@@ -1,4 +1,6 @@
+const info = require("./app/src/secret.js");
 const functions = require("firebase-functions");
+
 const express = require("express");
 const basicAuth = require("basic-auth-connect");
 const app = express();
@@ -6,7 +8,7 @@ const app = express();
 app.all(
   "*",
   basicAuth(function (user, password) {
-    return user === "optimind" && password === "pdp";
+    return user === info.user && password === info.password;
   })
 );
 

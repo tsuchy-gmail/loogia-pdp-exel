@@ -19,7 +19,7 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
       }
     };
     const numOfData = +sheet["!ref"].replace(/..../, "") - 1;
-    //p_lat: A , p_lng: Bといった具合になるようにkeyを用意
+    
     const requestBody = {
       name: projectName,
       depot: {

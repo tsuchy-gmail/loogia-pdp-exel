@@ -22,7 +22,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         return date + value.replace(/:/, "") + "00+0900";
       }
     };
-    //p_lat: A , p_lng: Bといった具合になるようにkeyを用意
     const requestBody = {
       name: projectName,
       depot: {

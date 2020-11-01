@@ -4,13 +4,9 @@ const fetch = require("node-fetch");
 
 export default function XLSX(file, projectName, depot, carriersInfo) {
   file.arrayBuffer().then((buffer) => {
-    console.log(buffer);
     const book = xlsx.read(buffer, { type: "buffer" });
-    console.log(book);
     const sheetName = book.SheetNames[0];
-    console.log("sheetName = ", sheetName);
     const sheet = book.Sheets[sheetName];
-    console.log(sheet);
 
     const date = new Date().toISOString().substr(0, 11).replace(/-/gi, "");
     //ISOtime("12:00") とすると	20201024T120000+0900といった様になるようにする
@@ -181,7 +177,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         }
       }
     }
-    console.log("data = ", data);
 
     //必須項目(lat, lng)のkeyとなる’p_lat’などの値が用意されてないexcelデータの場合、return
     if ((!data.p_lat && !data.p_lat) || (!data.d_lat && !data.d_lng)) {
@@ -196,7 +191,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
     //下のループの回数となるdataの数を,excelの行の数 - 1(1行目はp＿latといった値になっているため)としている
     const numOfData = +sheet["!ref"].replace(/..../, "") - 1;
     // (ex, sheet["!ref"] => A1:T15)
-    console.log(numOfData);
 
     //1つの行につき1つのjobをリクエストボディに追加していく
     //exelの2行目からデータを得る想定なので、i = 2でループを始めています。
@@ -259,7 +253,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           //名前があれば追加
           if (sheet[data.p_name + i]) {
             const name = sheet[data.p_name + i].v;
-            console.log(name);
             pickupSpot.name = name;
           }
           //travelDurationがあれば追加
@@ -301,8 +294,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         }
 
         if (sheet[data.p_service_duration + i]) {
-          console.log(job);
-          console.log(job.pickup);
           job.pickup.serviceDuration =
             sheet[data.p_service_duration + i].v * 60;
         }
@@ -358,12 +349,10 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
             serviceDuration: 0,
           };
         } else {
-          console.log("overlap");
           job.delivery = {
             spotId: String(alreadyNumber + 4),
             serviceDuration: 0,
           };
-          console.log("spodid ==>", job.delivery.spotId);
         }
 
         if (sheet[data.d_tw1s + i] && sheet[data.d_tw1e + i]) {
@@ -377,7 +366,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           };
         }
         if (sheet[data.d_service_duration + i]) {
-          console.log(sheet[data.d_service_duration + i]);
           job.delivery.serviceDuration =
             sheet[data.d_service_duration + i].v * 60;
         }
@@ -407,7 +395,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         const box = [];
         if (data.status === "error") {
           for (let i = 0; i < data.detail.length; i++) {
@@ -416,14 +403,12 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           }
           window.alert("エラー :\n" + box.join("\n"));
         } else {
-          console.log("spots", requestBody.spots);
           console.log("success!");
           window.alert("Loogiaにリクエストを送りました。");
         }
       })
       .catch((error) => {
-        console.log("error!");
-        console.log(error);
+        console.log(" - error - ", error);
         window.alert("入力内容に誤りがあります。");
       });
   });

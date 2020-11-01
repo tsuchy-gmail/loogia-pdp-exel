@@ -183,11 +183,11 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
     }
     console.log("data = ", data);
 
+    //必須項目(lat, lng)のkeyとなる’p_lat’などの値が用意されてないexcelデータの場合、return
     if ((!data.p_lat && !data.p_lat) || (!data.d_lat && !data.d_lng)) {
       window.alert("error 3 : 入力内容に誤りがあります。");
       return;
     }
-
     let overlapCount = 0;
     let emptyCount = 0;
     const joinBox = [];
@@ -197,10 +197,7 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
     const numOfData = +sheet["!ref"].replace(/..../, "") - 1;
     // (ex, sheet["!ref"] => A1:T15)
     console.log(numOfData);
-    // if (typeof numOfData !== "number") {
-    //   window.alert("error 5 : 入力内容に誤りがあります。");
-    //   return;
-    // }
+
     //1つの行につき1つのjobをリクエストボディに追加していく
     //exelの2行目からデータを得る想定なので、i = 2でループを始めています。
     for (let i = 2; i < numOfData + 2; i++) {
@@ -211,12 +208,12 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
       ) {
         break;
       }
-      console.log("size = ", sheet[data.size + i]);
+
       const job = {
         demands: [
           {
             dimId: "weight",
-            size: sheet[data.size + i].v,
+            size: 10,
           },
         ],
       };

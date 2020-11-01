@@ -4,8 +4,12 @@ const fetch = require("node-fetch");
 
 export default function XLSX(file, projectName, depot, carriersInfo) {
   file.arrayBuffer().then((buffer) => {
+    console.log(buffer);
     const book = xlsx.read(buffer, { type: "buffer" });
-    const sheet = book.Sheets.Sheet1;
+    console.log(book);
+    const sheetName = book.SheetNames[0];
+    console.log("sheetName = ", sheetName);
+    const sheet = book.Sheets[sheetName];
     console.log(sheet);
 
     const date = new Date().toISOString().substr(0, 11).replace(/-/gi, "");
@@ -18,7 +22,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         return date + value.replace(/:/, "") + "00+0900";
       }
     };
-    const numOfData = +sheet["!ref"].replace(/..../, "") - 1;
     //p_lat: A , p_lng: Bといった具合になるようにkeyを用意
     const requestBody = {
       name: projectName,
@@ -148,7 +151,6 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           case "p_travel_duration":
             data.p_travel_duration = alphabet;
             break;
-
           case "d_name":
             data.d_name = alphabet;
             break;
@@ -180,14 +182,37 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         }
       }
     }
+    console.log("data = ", data);
+
+    if ((!data.p_lat && !data.p_lat) || (!data.d_lat && !data.d_lng)) {
+      window.alert("error 3 : 入力内容に誤りがあります。");
+      return;
+    }
+
     let overlapCount = 0;
     let emptyCount = 0;
     const joinBox = [];
     let alreadyNumber;
 
+    //下のループの回数となるdataの数を,excelの行の数 - 1(1行目はp＿latといった値になっているため)としている
+    const numOfData = +sheet["!ref"].replace(/..../, "") - 1;
+    // (ex, sheet["!ref"] => A1:T15)
+    console.log(numOfData);
+    // if (typeof numOfData !== "number") {
+    //   window.alert("error 5 : 入力内容に誤りがあります。");
+    //   return;
+    // }
     //1つの行につき1つのjobをリクエストボディに追加していく
     //exelの2行目からデータを得る想定なので、i = 2でループを始めています。
     for (let i = 2; i < numOfData + 2; i++) {
+      //excelの下の方にある空欄が行数にカウントされている場合の対策のため,その行に必須項目の入力がない場合break
+      if (
+        (!sheet[data.p_lat + i] && !sheet[data.p_lat + i]) ||
+        (!sheet[data.d_lat + i] && !sheet[data.d_lng + i])
+      ) {
+        break;
+      }
+      console.log("size = ", sheet[data.size + i]);
       const job = {
         demands: [
           {
@@ -196,7 +221,9 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           },
         ],
       };
-
+      if (sheet[data.size + i]) {
+        job.demands[0].size = sheet[data.size + i].v;
+      }
       //pickupがあるかどうか
       if (sheet[data.p_lat + i] && sheet[data.p_lng + i]) {
         let isNew = true;

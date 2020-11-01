@@ -325,9 +325,13 @@ function App() {
         onSubmit={(e) => {
           e.preventDefault();
           if (file) {
-            XLSX(file, projectName, depot, carriersInfo);
+            if (file.name.substr(-5, 5) === ".xlsx") {
+              XLSX(file, projectName, depot, carriersInfo);
+            } else {
+              window.alert("error 2 : ファイルの形式が正しくありません。");
+            }
           } else {
-            window.alert("ファイルを選択してください。");
+            window.alert("error 1 : ファイルを選択してください。");
           }
         }}
       >

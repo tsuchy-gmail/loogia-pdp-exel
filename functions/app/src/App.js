@@ -14,6 +14,7 @@ import HomeTwoToneIcon from "@material-ui/icons/HomeTwoTone";
 import Button from "@material-ui/core/Button";
 import DescriptionTwoToneIcon from "@material-ui/icons/DescriptionTwoTone";
 import TelegramIcon from "@material-ui/icons/Telegram";
+import TuneIcon from "@material-ui/icons/Tune";
 
 //inputタグからの各入力値を保持し、Appコンポーネントにある関数XLSXに引数として渡したいと思い、最初Appコンポーネントで全ての入力値を管理しようとしていたのですが、入力のたびに全ての項目がレンダリングされてしまい重くなったため、コンポーネントを分け、グローバルに変数を宣言し、この値を関数XLSXに渡しています。
 let projectName = localStorage.projectName
@@ -37,6 +38,11 @@ const carriersInfo = localStorage.carriersInfo
       due: Array(5).fill(null, 0),
       duration: Array(5).fill(null, 0),
     };
+const options = {
+  allowHighway: 'Never',
+  restrictUturn: false,
+  balancing: {type: null, intensity: null}
+}
 let file;
 // ここまでの値を関数XLSXの引数に渡す
 const useStyles = makeStyles((theme) => ({
@@ -56,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
     display: "none",
   },
 }));
+
 
 const Wrapper = styled.div`
   width: 200px;
@@ -226,19 +233,19 @@ function Carrier() {
           onChange={handleChangeReady}
           defaultValue={carriersInfo.ready[i]}
           label="休憩-ready"
-          helperText="(例)12:00"
+          helperText="(例) 9:00"
         />
         <TextField
           onChange={handleChangeDue}
           defaultValue={carriersInfo.due[i]}
           label="休憩-due"
-          helperText="(例)15:00"
+          helperText="(例) 15:00"
         />
         <TextField
           onChange={handleChangeDuration}
           defaultValue={carriersInfo.duration[i]}
           label="休憩時間(m)"
-          helperText="(例)60"
+          helperText="(例) 60"
         />
       </form>
     );
@@ -277,7 +284,6 @@ function File() {
   const [isSelected, setIsSelected] = useState(false);
   const [File, setFile] = useState();
   const classes = useStyles();
-  console.log();
   return (
     <div className={classes.root}>
       <div style={{ width: "800px", marginTop: "30px" }}>
@@ -313,6 +319,126 @@ function File() {
   );
 }
 
+function OptionHeader(){
+  const classes = useStyles()
+  return(    
+    <div className={classes.root}>
+      <div style={{ width: "800px", marginTop: "30px" }}>
+        <TuneIcon color="primary" />
+        <span style={style}>options</span>
+      </div>
+    </div>
+)
+  
+}
+function AllowHighway(){
+  const classes = useStyles();
+  const handleChange = e => {
+    options.allowHighway = e.target.value;
+  }
+  return (
+    <FormControl className={classes.root}>
+        <InputLabel id="demo-simple-select-label">高速道路</InputLabel>
+        <Select
+          defaultValue={options.allowHighway}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          onChange={handleChange}
+          style={{width: '730px'}}
+        >
+          <MenuItem value={'Never'}>許可しない</MenuItem>
+          <MenuItem value={'Always'}>常に許可</MenuItem>
+          <MenuItem value={'OnFirstLeg'}>デポから出発して最初の訪問場所まで許可</MenuItem>
+          <MenuItem value={'OnLastLeg'}>最後のジョブを終えてからデポに帰るまで許可</MenuItem>
+          <MenuItem value={'OnFirstAndLastLeg'}>デポから出発して最初の目的地までと、最後のジョブが終わりデポに帰るまで許可</MenuItem>
+        </Select>
+    </FormControl>
+  )
+}
+
+function Balancing(){
+  const classes = useStyles();
+  const handleChangeType = e => {
+    options.balancing.type = e.target.value;
+    console.log('balancing = ', options.balancing)
+  }
+  const handleChangeIntensity = e => {
+    options.balancing.intensity = e.target.value
+    console.log('balancing = ', options.balancing)
+  }
+
+  return (
+    <div>
+        <FormControl className={classes.root}>
+        <InputLabel id="demo-simple-select-label">均等化</InputLabel>
+        <Select
+          defaultValue={0}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          onChange={handleChangeType}
+          style={{width: '357px'}}
+        >
+          <MenuItem value={0}>均等化しない</MenuItem>
+          <MenuItem value={'duration'}>勤務時間</MenuItem>
+          <MenuItem value={'service'}>訪問数</MenuItem>
+        </Select>
+    </FormControl>
+        <FormControl className={classes.root}>
+        <InputLabel id="demo-simple-select-label">均等化度</InputLabel>
+        <Select
+          defaultValue={0}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          onChange={handleChangeIntensity}
+          style={{width: '357px'}}
+        >
+          <MenuItem value={0}>-</MenuItem>
+          <MenuItem value={1}>1</MenuItem>
+          <MenuItem value={2}>2</MenuItem>
+          <MenuItem value={3}>3</MenuItem>
+          <MenuItem value={4}>4</MenuItem>
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={6}>6</MenuItem>
+          <MenuItem value={7}>7</MenuItem>
+          <MenuItem value={8}>8</MenuItem>
+          <MenuItem value={9}>9</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+        </Select>
+    </FormControl>
+    </div>
+  )
+}
+
+function Uturn(){
+  const classes = useStyles()
+  const handleChange = e => {
+    options.restrictUturn = e.target.value;
+    console.log('restrictUturn = ', options.restrictUturn)
+  }
+
+  return (
+    <FormControl className={classes.root}>
+        <InputLabel id="demo-simple-select-label">Uターン</InputLabel>
+        <Select
+          defaultValue={options.restrictUturn}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          onChange={handleChange}
+          style={{width: '730px'}}
+        >
+          <MenuItem value={false}>制限しない</MenuItem>
+          <MenuItem value={true}>制限する</MenuItem>
+        </Select>
+    </FormControl>
+
+  )
+
+}
+
+
+
+
+
 function App() {
   console.log("App");
   return (
@@ -321,12 +447,16 @@ function App() {
       <Project />
       <Depot />
       <Carrier />
+      <OptionHeader />
+      <AllowHighway />
+      <Balancing />
+      <Uturn />
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (file) {
             if (file.name.substr(-5, 5) === ".xlsx") {
-              XLSX(file, projectName, depot, carriersInfo);
+              XLSX(file, projectName, depot, carriersInfo, options);
             } else {
               window.alert("error 2 : ファイルの形式が正しくありません。");
             }
@@ -335,12 +465,13 @@ function App() {
           }
         }}
       >
-        <TelegramIcon style={{ marginTop: "0px" }} color="primary" />
         <Button
           type="submit"
-          style={{ padding: "30px 10px", outline: 0 }}
+          style={{ width: "730px",padding:'30px 10px', margin: '30px 8px', outline: 0 }}
+          variant='outlined'
           color="primary"
         >
+          <TelegramIcon style={{ margin: "4px" }} color="primary" />
           <b>POST</b>
         </Button>
       </form>

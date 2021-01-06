@@ -2,7 +2,11 @@ import { App_id, API_key } from "./id.js";
 const xlsx = require("xlsx");
 const fetch = require("node-fetch");
 
-export default function XLSX(file, projectName, depot, carriersInfo) {
+export function Expo(arg) {
+  return arg * 3;
+}
+
+export default function XLSX(file, projectName, depot, carriersInfo, options) {
   file.arrayBuffer().then((buffer) => {
     const book = xlsx.read(buffer, { type: "buffer" });
     const sheetName = book.SheetNames[0];
@@ -18,6 +22,9 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         return date + value.replace(/:/, "") + "00+0900";
       }
     };
+    if(!options.balancing.type || !options.balancing.intensity){
+      delete options.balancing
+    }
     const requestBody = {
       name: projectName,
       depot: {
@@ -30,7 +37,8 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
       carriers: [],
       spots: [],
       jobs: [],
-    };
+      option: options,
+    }
 
     //exelでA1にp_latが書かれている時、data.p_latにAを入れるようにしています。
     const data = {
@@ -253,6 +261,12 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
           //名前があれば追加
           if (sheet[data.p_name + i]) {
             const name = sheet[data.p_name + i].v;
+            console.log('typeOF = ', typeof name)
+            if(typeof name !== 'string'){
+              window.alert('spotの名前は文字列で指定してください。')
+              return;
+            }
+
             pickupSpot.name = name;
           }
           //travelDurationがあれば追加
@@ -296,6 +310,7 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         if (sheet[data.p_service_duration + i]) {
           job.pickup.serviceDuration =
             sheet[data.p_service_duration + i].v * 60;
+          console.log('p_service_duration = ', job.pickup.serviceDuration)
         }
       } else {
         emptyCount++;
@@ -329,13 +344,17 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
                   lat: sheet[data.d_lat + i].v,
                   lng: sheet[data.d_lng + i].v,
                 },
-                uturncost: 10000,
+                uTurnCost: 10000,
                 travelDuration: 0,
               },
             ],
           };
           if (sheet[data.d_name + i]) {
             const name = sheet[data.d_name + i].v;
+            if(typeof name !== 'string'){
+              window.alert('spotの名前は文字列で指定してください。')
+              return;
+            }
             deliverySpot.name = name;
           }
           if (sheet[data.d_travel_duration + i]) {
@@ -368,6 +387,7 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
         if (sheet[data.d_service_duration + i]) {
           job.delivery.serviceDuration =
             sheet[data.d_service_duration + i].v * 60;
+          console.log("serviceDuration =", job.delivery.serviceDuration);
         }
       } else {
         emptyCount++;
@@ -377,6 +397,9 @@ export default function XLSX(file, projectName, depot, carriersInfo) {
     //ループが終わり、リクエストボディができたらfetch
 
     const MyJson = JSON.stringify(requestBody);
+    requestBody.jobs.map(job => console.log('job = , ', job))
+    requestBody.spots.map(spot => console.log('spot = , ', spot))
+
     fetch(`https://loogia.tech/api/v0/projects`, {
       method: "POST",
       headers: {

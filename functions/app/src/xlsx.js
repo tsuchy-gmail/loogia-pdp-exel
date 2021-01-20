@@ -1,12 +1,7 @@
-import { App_id, API_key } from "./id.js";
 const xlsx = require("xlsx");
 const fetch = require("node-fetch");
 
-export function Expo(arg) {
-  return arg * 3;
-}
-
-export default function XLSX(file, projectName, depot, carriersInfo, options) {
+export default function XLSX(file, projectName, depot, carriersInfo, options, organization) {
   file.arrayBuffer().then((buffer) => {
     const book = xlsx.read(buffer, { type: "buffer" });
     const sheetName = book.SheetNames[0];
@@ -22,9 +17,18 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
         return date + value.replace(/:/, "") + "00+0900";
       }
     };
-    if(!options.balancing.type || !options.balancing.intensity){
-      delete options.balancing
+    //入力が無かった不要なoptionを削除(初期値をnullとしてあるプロパティ)
+    const optionsCopy = Object.assign({}, options)
+    if(!optionsCopy.balancing.type || !optionsCopy.balancing.intensity){
+      delete optionsCopy.balancing
     }
+    if(!optionsCopy.turnDirectionRestriction.direction || !optionsCopy.turnDirectionRestriction.intensity){
+      delete optionsCopy.turnDirectionRestriction
+    }
+    if(!optionsCopy.calculationTime){
+      delete optionsCopy.calculationTime
+    }
+
     const requestBody = {
       name: projectName,
       depot: {
@@ -37,7 +41,7 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
       carriers: [],
       spots: [],
       jobs: [],
-      option: options,
+      option: optionsCopy,
     }
 
     //exelでA1にp_latが書かれている時、data.p_latにAを入れるようにしています。
@@ -261,7 +265,6 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
           //名前があれば追加
           if (sheet[data.p_name + i]) {
             const name = sheet[data.p_name + i].v;
-            console.log('typeOF = ', typeof name)
             if(typeof name !== 'string'){
               window.alert('spotの名前は文字列で指定してください。')
               return;
@@ -310,7 +313,6 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
         if (sheet[data.p_service_duration + i]) {
           job.pickup.serviceDuration =
             sheet[data.p_service_duration + i].v * 60;
-          console.log('p_service_duration = ', job.pickup.serviceDuration)
         }
       } else {
         emptyCount++;
@@ -387,7 +389,6 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
         if (sheet[data.d_service_duration + i]) {
           job.delivery.serviceDuration =
             sheet[data.d_service_duration + i].v * 60;
-          console.log("serviceDuration =", job.delivery.serviceDuration);
         }
       } else {
         emptyCount++;
@@ -396,16 +397,15 @@ export default function XLSX(file, projectName, depot, carriersInfo, options) {
     }
     //ループが終わり、リクエストボディができたらfetch
 
+    console.log('options-request = ', requestBody.option)
     const MyJson = JSON.stringify(requestBody);
-    requestBody.jobs.map(job => console.log('job = , ', job))
-    requestBody.spots.map(spot => console.log('spot = , ', spot))
 
     fetch(`https://loogia.tech/api/v0/projects`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Loogia-App-Id": App_id,
-        "X-Loogia-API-Key": API_key,
+        "X-Loogia-App-Id": organization.AppID,
+        "X-Loogia-API-Key": organization.ApiKey,
       },
       mode: "cors",
       body: MyJson,

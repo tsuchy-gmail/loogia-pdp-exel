@@ -10,7 +10,6 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import LocalShippingTwoToneIcon from "@material-ui/icons/LocalShippingTwoTone";
 import EmojiTransportationTwoToneIcon from "@material-ui/icons/EmojiTransportationTwoTone";
-import HomeTwoToneIcon from "@material-ui/icons/HomeTwoTone";
 import Button from "@material-ui/core/Button";
 import DescriptionTwoToneIcon from "@material-ui/icons/DescriptionTwoTone";
 import TelegramIcon from "@material-ui/icons/Telegram";
@@ -18,7 +17,6 @@ import TuneIcon from "@material-ui/icons/Tune";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogActions from "@material-ui/core/DialogActions";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DeleteSweepTwoToneIcon from "@material-ui/icons/DeleteSweepTwoTone";
 import LabelImportantIcon from "@material-ui/icons/LabelImportant";
@@ -1158,6 +1156,7 @@ function App() {
             padding: "30px 10px",
             margin: "30px 8px",
             outline: 0,
+            borderRadius: 0
           }}
           variant="outlined"
           color="primary"

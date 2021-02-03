@@ -551,10 +551,12 @@ function File() {
               width: "727px",
               marginTop: "20px",
               marginLeft: "4px",
+              border: '1px solid #949494',
+              borderRadius: 0,
             }}
             component="span"
           >
-            {isSelected ? "✔︎ 選択中 ー " + File.name : "ファイルを選択"}
+            {isSelected ? "✔︎ 選択中 ー " + File.name : <span style={{color: '#787878'}}>ファイルを選択</span>}
           </Button>
         </label>
       </div>
@@ -1110,6 +1112,7 @@ function Organization() {
 }
 
 function App() {
+  const MarginY = {marginTop: '10px'}
   return (
     <div style={{width: '1100px', margin: '0px auto', boxShadow: '0 0 30px'}}>
     <div style={{width: '770px', margin: '0 auto', paddingTop: '20px'}}>

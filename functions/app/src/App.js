@@ -16,8 +16,8 @@ import DescriptionTwoToneIcon from "@material-ui/icons/DescriptionTwoTone";
 import TelegramIcon from "@material-ui/icons/Telegram";
 import TuneIcon from "@material-ui/icons/Tune";
 import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
+import DialogActions from "@material-ui/core/DialogActions";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DeleteSweepTwoToneIcon from "@material-ui/icons/DeleteSweepTwoTone";
@@ -25,6 +25,7 @@ import LabelImportantIcon from "@material-ui/icons/LabelImportant";
 import BusinessIcon from "@material-ui/icons/Business";
 
 //inputタグからの各入力値を保持し、Appコンポーネントにある関数XLSXに引数として渡したいと思い、最初Appコンポーネントで全ての入力値を管理しようとしていたのですが、入力のたびに全ての項目がレンダリングされてしまい重くなったため、コンポーネントを分け、グローバルに変数を宣言し、この値を関数XLSXに渡しています。
+
 
 let organizationList = localStorage.organizationList
   ? JSON.parse(localStorage.organizationList)
@@ -1110,7 +1111,8 @@ function Organization() {
 
 function App() {
   return (
-    <div className="container">
+    <div style={{width: '1100px', margin: '0px auto', boxShadow: '0 0 30px'}}>
+    <div style={{width: '770px', margin: '0 auto', paddingTop: '20px'}}>
       <File />
       <Organization />
       <Project />
@@ -1161,6 +1163,7 @@ function App() {
           <b>計算開始</b>
         </Button>
       </form>
+    </div>
     </div>
   );
 }

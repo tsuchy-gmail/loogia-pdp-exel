@@ -1,7 +1,14 @@
 const xlsx = require("xlsx");
 const fetch = require("node-fetch");
 
-export default function XLSX(file, projectName, depot, carriersInfo, options, organization) {
+export default function XLSX(
+  file,
+  projectName,
+  depot,
+  carriersInfo,
+  options,
+  organization
+) {
   file.arrayBuffer().then((buffer) => {
     const book = xlsx.read(buffer, { type: "buffer" });
     const sheetName = book.SheetNames[0];
@@ -18,15 +25,18 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
       }
     };
     //入力が無かった不要なoptionを削除(初期値をnullとしてあるプロパティ)
-    const optionsCopy = Object.assign({}, options)
-    if(!optionsCopy.balancing.type || !optionsCopy.balancing.intensity){
-      delete optionsCopy.balancing
+    const optionsCopy = Object.assign({}, options);
+    if (!optionsCopy.balancing.type || !optionsCopy.balancing.intensity) {
+      delete optionsCopy.balancing;
     }
-    if(!optionsCopy.turnDirectionRestriction.direction || !optionsCopy.turnDirectionRestriction.intensity){
-      delete optionsCopy.turnDirectionRestriction
+    if (
+      !optionsCopy.turnDirectionRestriction.direction ||
+      !optionsCopy.turnDirectionRestriction.intensity
+    ) {
+      delete optionsCopy.turnDirectionRestriction;
     }
-    if(!optionsCopy.calculationTime){
-      delete optionsCopy.calculationTime
+    if (!optionsCopy.calculationTime) {
+      delete optionsCopy.calculationTime;
     }
 
     const requestBody = {
@@ -42,10 +52,12 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
       spots: [],
       jobs: [],
       option: optionsCopy,
-    }
+    };
 
     //exelでA1にp_latが書かれている時、data.p_latにAを入れるようにしています。
     const data = {
+      job_name: null,
+      p_address: null,
       p_lat: null,
       p_lng: null,
       p_name: null,
@@ -54,6 +66,7 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
       p_service_duration: null,
       p_travel_duration: null,
 
+      d_address: null,
       d_lat: null,
       d_lng: null,
       d_name: null,
@@ -137,6 +150,12 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
 
       if (sheet[alphabet + "1"]) {
         switch (sheet[alphabet + "1"].v.trim()) {
+          case "job_name":
+            data.job_name = alphabet;
+            break;
+          case "p_address":
+            data.p_address = alphabet;
+            break;
           case "p_name":
             data.p_name = alphabet;
             break;
@@ -160,6 +179,9 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
             break;
           case "d_name":
             data.d_name = alphabet;
+            break;
+          case "d_address":
+            data.d_address = alphabet;
             break;
           case "d_lat":
             data.d_lat = alphabet;
@@ -223,6 +245,10 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
           },
         ],
       };
+      //job名があれば追加
+      if (sheet[data.job_name + i]) {
+        job.name = sheet[data.job_name + i].v;
+      }
       if (sheet[data.size + i]) {
         job.demands[0].size = sheet[data.size + i].v;
       }
@@ -244,7 +270,7 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
           joinBox.push(join);
 
           const pickupSpot = {
-            //重複した場合と、picuupかdeliveryのどちらかがなかった場合、その分引き、idの番号とjoinBoxの配列の番号を揃える
+            //重複した場合と、pickupかdeliveryのどちらかがなかった場合、その分引き、idの番号とjoinBoxの配列の番号を揃える
             id: String(2 * i - overlapCount - emptyCount),
             //最初のspotIdは4で始まる
             geocode: {
@@ -262,11 +288,17 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
               },
             ],
           };
+          //住所があれば追加
+          if (sheet[data.p_address + i]) {
+            const address = sheet[data.p_address + i].v;
+            pickupSpot.address = { address1: address };
+          }
+
           //名前があれば追加
           if (sheet[data.p_name + i]) {
             const name = sheet[data.p_name + i].v;
-            if(typeof name !== 'string'){
-              window.alert('spotの名前は文字列で指定してください。')
+            if (typeof name !== "string") {
+              window.alert("spotの名前は文字列で指定してください。");
               return;
             }
 
@@ -351,10 +383,16 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
               },
             ],
           };
+          //住所
+          if (sheet[data.d_address + i]) {
+            const address = sheet[data.d_address + i].v;
+            deliverySpot.address = { address1: address };
+          }
+          //spot名
           if (sheet[data.d_name + i]) {
             const name = sheet[data.d_name + i].v;
-            if(typeof name !== 'string'){
-              window.alert('spotの名前は文字列で指定してください。')
+            if (typeof name !== "string") {
+              window.alert("spotの名前は文字列で指定してください。");
               return;
             }
             deliverySpot.name = name;
@@ -397,10 +435,15 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
     }
     //ループが終わり、リクエストボディができたらfetch
 
-    console.log('options-request = ', requestBody.option)
+    console.log("request = ", requestBody);
     const MyJson = JSON.stringify(requestBody);
 
-    fetch(`https://loogia.tech/api/v0/projects`, {
+    const URL =
+      organization.name === "dev"
+        ? "https://dev.loogia.tech/api/v0/projects"
+        : "https://loogia.tech/api/v0/projects";
+
+    const postOptions = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -409,11 +452,13 @@ export default function XLSX(file, projectName, depot, carriersInfo, options, or
       },
       mode: "cors",
       body: MyJson,
-    })
+    };
+
+    fetch(URL, postOptions)
       .then((response) => {
-        console.log(response);
         if (response.status === 500) {
           window.alert("エラー : error 500");
+          throw "error 500";
         }
         return response.json();
       })

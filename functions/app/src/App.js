@@ -24,7 +24,6 @@ import BusinessIcon from "@material-ui/icons/Business";
 
 //inputタグからの各入力値を保持し、Appコンポーネントにある関数XLSXに引数として渡したいと思い、最初Appコンポーネントで全ての入力値を管理しようとしていたのですが、入力のたびに全ての項目がレンダリングされてしまい重くなったため、コンポーネントを分け、グローバルに変数を宣言し、この値を関数XLSXに渡しています。
 
-
 let organizationList = localStorage.organizationList
   ? JSON.parse(localStorage.organizationList)
   : [
@@ -354,7 +353,7 @@ function Depot() {
         onClose={handleCloseDelete}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">デポを登録</DialogTitle>
+        <DialogTitle id="form-dialog-title">デポを削除</DialogTitle>
         <DialogContent>
           <Select
             defaultValue={0}
@@ -549,12 +548,16 @@ function File() {
               width: "727px",
               marginTop: "20px",
               marginLeft: "4px",
-              border: '1px solid #949494',
+              border: "1px solid #949494",
               borderRadius: 0,
             }}
             component="span"
           >
-            {isSelected ? "✔︎ 選択中 ー " + File.name : <span style={{color: '#787878'}}>ファイルを選択</span>}
+            {isSelected ? (
+              "✔︎ 選択中 ー " + File.name
+            ) : (
+              <span style={{ color: "#787878" }}>ファイルを選択</span>
+            )}
           </Button>
         </label>
       </div>
@@ -725,10 +728,10 @@ function IgnoreReturnTrip() {
         onChange={handleChange}
         style={{ width: "730px" }}
       >
-        <MenuItem value={false}>デポへの帰り道まで最適化に含める (default)</MenuItem>
-        <MenuItem value={true}>
-          デポへの帰り道は最適化に含めない
+        <MenuItem value={false}>
+          デポへの帰り道まで最適化に含める (default)
         </MenuItem>
+        <MenuItem value={true}>デポへの帰り道は最適化に含めない</MenuItem>
       </Select>
     </FormControl>
   );
@@ -1078,7 +1081,7 @@ function Organization() {
         onClose={handleCloseDelete}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">組織を登録</DialogTitle>
+        <DialogTitle id="form-dialog-title">組織を削除</DialogTitle>
         <DialogContent>
           <Select
             defaultValue={0}
@@ -1110,62 +1113,62 @@ function Organization() {
 }
 
 function App() {
-  const MarginY = {marginTop: '10px'}
+  const MarginY = { marginTop: "10px" };
   return (
-    <div style={{width: '1100px', margin: '0px auto', boxShadow: '0 0 30px'}}>
-    <div style={{width: '770px', margin: '0 auto', paddingTop: '20px'}}>
-      <File />
-      <Organization />
-      <Project />
-      <Depot />
-      <Carrier />
-      <OptionHeader />
-      <Balancing />
-      <DirectionRestriction />
-      <Uturn />
-      <ForceTargetLeft />
-      <IgnoreReturnTrip />
-      <AllowHighway />
-      <KeepStraight />
-      <CalculationTime />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (file) {
-            if (file.name.substr(-5, 5) === ".xlsx") {
-              XLSX(
-                file,
-                projectName,
-                depotList[numberOfDepot],
-                carriersInfo,
-                options,
-                organizationList[numberOfOrganization]
-              );
+    <div style={{ width: "1100px", margin: "0px auto", boxShadow: "0 0 30px" }}>
+      <div style={{ width: "770px", margin: "0 auto", paddingTop: "20px" }}>
+        <File />
+        <Organization />
+        <Project />
+        <Depot />
+        <Carrier />
+        <OptionHeader />
+        <Balancing />
+        <DirectionRestriction />
+        <Uturn />
+        <ForceTargetLeft />
+        <IgnoreReturnTrip />
+        <AllowHighway />
+        <KeepStraight />
+        <CalculationTime />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (file) {
+              if (file.name.substr(-5, 5) === ".xlsx") {
+                XLSX(
+                  file,
+                  projectName,
+                  depotList[numberOfDepot],
+                  carriersInfo,
+                  options,
+                  organizationList[numberOfOrganization]
+                );
+              } else {
+                window.alert("error 2 : ファイルの形式が正しくありません。");
+              }
             } else {
-              window.alert("error 2 : ファイルの形式が正しくありません。");
+              window.alert("error 1 : ファイルを選択してください。");
             }
-          } else {
-            window.alert("error 1 : ファイルを選択してください。");
-          }
-        }}
-      >
-        <Button
-          type="submit"
-          style={{
-            width: "730px",
-            padding: "30px 10px",
-            margin: "30px 8px",
-            outline: 0,
-            borderRadius: 0
           }}
-          variant="outlined"
-          color="primary"
         >
-          <TelegramIcon style={{ margin: "4px" }} color="primary" />
-          <b>計算開始</b>
-        </Button>
-      </form>
-    </div>
+          <Button
+            type="submit"
+            style={{
+              width: "730px",
+              padding: "30px 10px",
+              margin: "30px 8px",
+              outline: 0,
+              borderRadius: 0,
+            }}
+            variant="outlined"
+            color="primary"
+          >
+            <TelegramIcon style={{ margin: "4px" }} color="primary" />
+            <b>計算開始</b>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
